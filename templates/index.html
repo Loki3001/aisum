@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Summarizer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e5e9;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e1e5e9;
+            background: white;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .platform-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .platform-avatar {
+            width: 40px;
+            height: 40px;
+            background: #6366f1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .platform-details h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .platform-details p {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .header-btn {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover {
+            background: #f9fafb;
+        }
+
+        .star-btn {
+            color: #fbbf24;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tag.revenue {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .tag.normal {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .tag.high {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .tag.positive {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .main-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .input-section {
+            padding: 24px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #5855eb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .ai-summary-section {
+            padding: 24px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .ai-summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .ai-summary-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6366f1;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .summary-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-sm:hover {
+            background: #f9fafb;
+        }
+
+        .regenerate-btn {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .regenerate-btn:hover {
+            background: #5855eb;
+        }
+
+        .generated-summary {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .summary-text {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .summary-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-control {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-control:hover {
+            background: #f9fafb;
+        }
+
+        .action-items {
+            padding: 24px;
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .action-items h3 {
+            color: #92400e;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .action-list {
+            list-style: none;
+        }
+
+        .action-list li {
+            padding: 6px 0;
+            color: #78350f;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .action-list li::before {
+            content: "•";
+            color: #f59e0b;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #9ca3af;
+            padding: 40px 20px;
+        }
+
+        .placeholder i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        .attachments-section {
+            padding: 24px;
+            background: #f9fafb;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .attachments-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+
+        .attachment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .attachment-icon {
+            width: 32px;
+            height: 32px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .attachment-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .full-update {
+            padding: 24px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .full-update h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .full-update-text {
+            color: #4b5563;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .controls-row {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-controls {
+                flex-direction: column;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="header-top">
+                    <div class="platform-info">
+                        <div class="platform-avatar">
+                            AS
+                        </div>
+                        <div class="platform-details">
+                            <h1>AI Summarizer</h1>
+                            <p>Summary at a click <span id="timestamp"></span></p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-btn star-btn">
+                            <i class="far fa-star"></i> Star
+                        </button>
+                        <button class="header-btn">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                        <button class="header-btn">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tags">
+                    <span class="tag revenue"><i class="fas fa-dollar-sign"></i> Revenue</span>
+                    <span class="tag normal">normal priority</span>
+                    <span class="tag high">high</span>
+                    <span class="tag positive">positive</span>
+                </div>
+
+                <h2 class="main-title" id="mainTitle">Summary
+            </div>
+
+            <div class="content">
+                <!-- Input Section -->
+                <div class="input-section">
+                    <form id="summarizerForm">
+                        <div class="form-group">
+                            <label for="textInput">Enter text to summarize:</label>
+                            <textarea class="form-control" id="textInput" name="text"
+                                placeholder="Paste your text here..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fileInput">Or upload a file (.txt, .docx):</label>
+                            <input type="file" class="form-control" id="fileInput" accept=".txt,.docx"
+                                style="min-height: auto; padding: 12px;">
+                        </div>
+
+                        <div class="controls-row">
+                            <div class="form-group">
+                                <label for="maxWords">Max Summary Words:</label>
+                                <input type="number" class="form-control" id="maxWords" name="max_words" value="150"
+                                    min="30" max="500" style="min-height: auto;">
+                            </div>
+                            <div class="form-group">
+                                <label for="minWords">Min Summary Words:</label>
+                                <input type="number" class="form-control" id="minWords" name="min_words" value="30"
+                                    min="10" max="200" style="min-height: auto;">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-magic"></i> Generate Summary
+                        </button>
+                    </form>
+
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Generating your summary...</p>
+                    </div>
+                </div>
+
+                <!-- AI Summary Section -->
+                <div class="ai-summary-section">
+                    <div class="ai-summary-header">
+                        <div class="ai-summary-title">
+                            <i class="fas fa-robot"></i> AI Summary
+                        </div>
+                        <div class="summary-actions">
+                            <button class="btn-sm" id="hideBtn">
+                                <i class="fas fa-eye-slash"></i> Hide
+                            </button>
+                            <button class="btn-sm regenerate-btn" id="regenerateBtn">
+                                <i class="fas fa-sync"></i> Regenerate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="summaryResults" style="display: none;">
+                        <div class="stats" id="stats"></div>
+
+                        <div class="generated-summary">
+                            <div class="summary-header">
+                                <i class="fas fa-sparkles"></i> AI-Generated Summary
+                            </div>
+                            <div class="summary-text" id="summaryText"></div>
+
+                            <div class="summary-controls">
+                                <button class="btn-control" id="boardBtn">
+                                    <i class="fas fa-download"></i> Board Format
+                                </button>
+                                <button class="btn-control" id="lpBtn">
+                                    <i class="fas fa-file-alt"></i> LP Format
+                                </button>
+                                <button class="btn-control" id="saveBtn">
+                                    <i class="fas fa-save"></i> Save Summary
+                                </button>
+                                <button class="btn-control" id="copyBtn">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="placeholder" class="placeholder">
+                        <i class="fas fa-file-text"></i>
+                        <p>Your AI-generated summary will appear here</p>
+                    </div>
+                </div>
+
+                <!-- Action Items -->
+                <div class="action-items">
+                    <h3><i class="fas fa-tasks"></i> Action Items</h3>
+                    <ul class="action-list" id="actionList">
+                        <li>1</li>
+                        <li>2</li>
+                    </ul>
+                </div>
+
+                <!-- Full Update Section -->
+                <div class="full-update">
+                    <h3>Full Update</h3>
+                    <p class="full-update-text" id="fullUpdateText">
+                        Here's a quick update on our recent progress:
+                    </p>
+                </div>
+
+                <!-- Attachments Section -->
+                <div class="attachments-section">
+                    <div class="attachments-title">Attachments</div>
+                    <div id="attachmentList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSummary = null;
+        let uploadedFiles = [];
+
+        // File upload handler
+        document.getElementById('fileInput').addEventListener('change', async function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        document.getElementById('textInput').value = data.content;
+                        alert(`File uploaded successfully! Word count: ${data.word_count}`);
+                        uploadedFiles = [{ name: file.name, type: file.type }];
+                        updateAttachments();
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    alert(`Error uploading file: ${error.message}`);
+                }
+            }
+        });
+
+        // Form submission handler
+        document.getElementById('summarizerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const textInput = document.getElementById('textInput').value.trim();
+            if (!textInput) {
+                alert('Please enter some text to summarize');
+                return;
+            }
+
+            await generateSummary();
+        });
+
+        async function generateSummary() {
+            const loading = document.getElementById('loading');
+            const placeholder = document.getElementById('placeholder');
+            const summaryResults = document.getElementById('summaryResults');
+
+            loading.style.display = 'block';
+            placeholder.style.display = 'none';
+            summaryResults.style.display = 'none';
+
+            const textInput = document.getElementById('textInput').value;
+            const maxWords = parseInt(document.getElementById('maxWords').value);
+            const minWords = parseInt(document.getElementById('minWords').value);
+
+            try {
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: textInput,
+                        max_words: maxWords,
+                        min_words: minWords
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    loading.style.display = 'none';
+                    displaySummary(data);
+                    summaryResults.style.display = 'block';
+                    updateActionItems();
+                    updateMainTitle(data.summary);
+                    updateFullUpdate(data.summary);
+                    updateAttachments();
+                } else {
+                    alert(`Error: ${data.error}`);
+                    loading.style.display = 'none';
+                    placeholder.style.display = 'block';
+                }
+            } catch (error) {
+                alert(`Error generating summary: ${error.message}`);
+                loading.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        }
+
+        function displaySummary(data) {
+            currentSummary = data;
+
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-number">${data.original_word_count}</div>
+                    <div class="stat-label">Original Words</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${data.summary_word_count}</div>
+                    <div class="stat-label">Summary Words</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${data.compression_ratio}%</div>
+                    <div class="stat-label">Reduction</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${data.timestamp}</div>
+                    <div class="stat-label">Generated At</div>
+                </div>
+            `;
+
+            document.getElementById('summaryText').textContent = data.summary;
+            document.getElementById('timestamp').textContent = data.timestamp;
+        }
+
+        function updateMainTitle(summary) {
+            const firstSentence = summary.split('.')[0].trim();
+            document.getElementById('mainTitle').textContent = firstSentence || 'Summary Generated';
+        }
+
+        function updateFullUpdate(summary) {
+            document.getElementById('fullUpdateText').textContent = summary;
+        }
+
+        function updateActionItems() {
+            document.getElementById('actionList').innerHTML = `
+                <li>Review the generated summary above</li>
+                <li>Download in your preferred format</li>
+                <li>Save or copy the summary for future use</li>
+            `;
+        }
+
+        function updateAttachments() {
+            const attachmentList = document.getElementById('attachmentList');
+            attachmentList.innerHTML = '';
+
+            uploadedFiles.forEach(file => {
+                const iconClass = file.name.endsWith('.pdf') ? 'fa-file-pdf' :
+                    file.name.endsWith('.docx') ? 'fa-file-word' :
+                        file.name.endsWith('.txt') ? 'fa-file-alt' : 'fa-file';
+
+                const attachmentItem = document.createElement('div');
+                attachmentItem.className = 'attachment-item';
+                attachmentItem.innerHTML = `
+                    <div class="attachment-info">
+                        <div class="attachment-icon">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <span>${file.name}</span>
+                    </div>
+                    <div class="attachment-actions">
+                        <button class="btn-control" onclick="downloadFile('${file.name}')">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn-control" onclick="previewFile('${file.name}')">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                `;
+                attachmentList.appendChild(attachmentItem);
+            });
+        }
+
+        function downloadFile(filename) {
+            alert(`Downloading ${filename}... (Functionality to be implemented)`);
+            // Implement actual file download logic if backend supports it
+        }
+
+        function previewFile(filename) {
+            alert(`Previewing ${filename}... (Functionality to be implemented)`);
+            // Implement actual file preview logic if backend supports it
+        }
+
+        // Button event listeners
+        document.getElementById('hideBtn').addEventListener('click', function () {
+            const summaryResults = document.getElementById('summaryResults');
+            const placeholder = document.getElementById('placeholder');
+
+            if (summaryResults.style.display !== 'none') {
+                summaryResults.style.display = 'none';
+                placeholder.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-eye"></i> Show';
+            } else {
+                summaryResults.style.display = 'block';
+                placeholder.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
+            }
+        });
+
+        document.getElementById('regenerateBtn').addEventListener('click', async function () {
+            if (document.getElementById('textInput').value.trim()) {
+                await generateSummary();
+            }
+        });
+
+        document.getElementById('copyBtn').addEventListener('click', function () {
+            if (currentSummary) {
+                navigator.clipboard.writeText(currentSummary.summary);
+                alert('Summary copied to clipboard!');
+            }
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', async function () {
+            if (currentSummary) {
+                try {
+                    const response = await fetch('/generate_pdf', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(currentSummary)
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `summary_report_${new Date().toISOString().replace(/[:.]/g, '-')}.pdf`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    } else {
+                        const data = await response.json();
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    alert(`Error generating PDF: ${error.message}`);
+                }
+            }
+        });
+
+        document.getElementById('boardBtn').addEventListener('click', function () {
+            if (currentSummary) {
+                const boardFormat = `**Board Summary**\n\n${currentSummary.summary}`;
+                navigator.clipboard.writeText(boardFormat);
+                alert('Board format copied to clipboard!');
+            }
+        });
+
+        document.getElementById('lpBtn').addEventListener('click', function () {
+            if (currentSummary) {
+                const lpFormat = `Limited Partner Update:\n${currentSummary.summary}`;
+                navigator.clipboard.writeText(lpFormat);
+                alert('LP format copied to clipboard!');
+            }
+        });
+
+        // Header button functionality
+        document.querySelector('.star-btn').addEventListener('click', function () {
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        });
+    </script>
+</body>
+
+</html>
